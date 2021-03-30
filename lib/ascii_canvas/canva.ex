@@ -6,6 +6,6 @@ defmodule AsciiCanvas.Canva do
   schema "canvas" do
     field :width, :integer
     field :height, :integer
-    field :origin, {:array, :integer}
+    field :origin, :map
   end
 end
