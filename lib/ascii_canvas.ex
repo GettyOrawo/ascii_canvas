@@ -6,7 +6,7 @@ defmodule AsciiCanvas do
   alias AsciiCanvas.Drawing
   alias AsciiCanvas.Repo
 
-  defstruct [:origin, :start, :width, :height, :outline, :fill]
+  defstruct [:origin, :start, :width, :height, :outline, :fill, :canvas_id]
 
   @doc """
   constructor: creates initial state and draws a rectangle
@@ -14,33 +14,35 @@ defmodule AsciiCanvas do
   
   def new([x,y], w, h, outline, fill) do
     {:ok, canvas} = Repo.insert(%Canva{width: 100, height: 100, origin: %{x: 0, y: 0}})
-    %__MODULE__{ origin: {x,y}, width: w, height: h, outline: outline, fill: fill }
-    |> draw(canvas.id)
+    %__MODULE__{ origin: {x,y}, width: w, height: h, outline: outline, fill: fill, canvas_id: canvas.id }
+    |> draw()
+  end
+
+  def new([x,y], fill) do
+    
   end
 
   @doc """
   fetches all the outline coordinates for a given rectangle, if outline is specified
   """
 
-  def draw(strct, canvas_id) when strct.outline == nil do
+  def draw(strct) when strct.outline == nil || strct.outline == strct.fill do
     coords = strct
     |> draw_fill()
-    |> Map.put(:outline, nil)
 
-    Repo.insert(%Drawing{coordinates: coords, canvas_id: canvas_id})
+    Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
   end
 
-  def draw(strct, canvas_id) when strct.fill == nil do
+  def draw(strct) when strct.fill == nil do
     coords = []
     |> draw_outline(strct, 0, strct.origin)
-    |> Map.put(:fill, nil)
 
-    Repo.insert(%Drawing{coordinates: coords, canvas_id: canvas_id})
+    Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
   end
 
-  def draw(strct, canvas_id) do
+  def draw(strct) do
     coords = draw_outline_and_fill(strct)
-    Repo.insert(%Drawing{coordinates: coords, canvas_id: canvas_id})
+    Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
   end
 
   @doc """
