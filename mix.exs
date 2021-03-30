@@ -14,6 +14,7 @@ defmodule AsciiCanvas.MixProject do
   # Run "mix help compile.app" to learn about applications.
   def application do
     [
+      mod: {AsciiCanvas.Application, []},
       extra_applications: [:logger]
     ]
   end
@@ -22,7 +23,8 @@ defmodule AsciiCanvas.MixProject do
   defp deps do
     [
        {:ecto_sql, "~> 3.0"},
-       {:postgrex, ">= 0.0.0"}
+       {:postgrex, ">= 0.0.0"},
+       {:jason, "~> 1.2"}
     ]
   end
 end
