@@ -10,9 +10,8 @@ defmodule AsciiCanvas do
   defstruct [:origin, :width, :height, :outline, :fill, :canvas_id]
 
   @doc """
-  constructor: creates initial state and draws a rectangle
+  creates a new canvas and discards any existing ones
   """
-
    def launch_canvas do
     Canva |> Repo.one()  |> launch_canvas()      
    end
@@ -27,7 +26,9 @@ defmodule AsciiCanvas do
       Repo.insert(%Canva{width: 10, height: 10, origin: %{x: 0, y: 0}})
    end
 
-  
+  @doc """
+  constructor: updates struct initial state and draws a rectangle or flood fill
+  """
   def new([x,y], w, h, outline, fill) do
     canvas = Repo.one(Canva)
     %__MODULE__{ origin: {x,y}, width: w, height: h, outline: outline, fill: fill, canvas_id: canvas.id}
@@ -41,7 +42,7 @@ defmodule AsciiCanvas do
   end
 
   @doc """
-  fetches all the outline coordinates for a given rectangle, if outline is specified
+  draws specified flood fill on canvas
   """
   def draw({:flood_fill, strct}) do
     coords = strct
@@ -52,17 +53,19 @@ defmodule AsciiCanvas do
     Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
   end
 
+  @doc """
+  discards any existing coordinates from the flood fill
+  """
   def ignore_existing_coordinates(coords) do
     # all_active_coordinates()
     coords -- duplicate_coordinates(coords)
   end
 
+  @doc """
+  searches for duplicate coordinates between the fllod fill and the already persisted coordinates
+  """
   def  duplicate_coordinates(coords) do
-    atom_key_coords = 
-      all_active_coordinates()
-      |> Enum.map(fn string_key_map -> 
-           for {key, val} <- string_key_map, into: %{}, do: {String.to_atom(key), val}  end
-          )
+    atom_key_coords = all_active_coordinates() |> Enum.map(fn string_key_map ->  for {key, val} <- string_key_map, into: %{}, do: {String.to_atom(key), val}  end)
     Enum.map(atom_key_coords, 
       fn g -> 
         Enum.filter(coords, 
@@ -75,6 +78,9 @@ defmodule AsciiCanvas do
     |> List.flatten()
   end
 
+  @doc """
+  fetches all persisted coordinates from the database
+  """
   def all_active_coordinates do
      query = from p in AsciiCanvas.Drawing,
      select: p.coordinates
@@ -85,6 +91,9 @@ defmodule AsciiCanvas do
     |> Enum.uniq()
   end
 
+  @doc """
+  draws rectangle with fill only
+  """
   def draw(strct) when strct.outline == nil do
     coords = strct
     |> draw_fill()
@@ -93,6 +102,9 @@ defmodule AsciiCanvas do
     Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
   end
 
+  @doc """
+  draws rectangle with fill only for when the outline and fill characters are exactly the same
+  """
   def draw(strct) when strct.outline == strct.fill do
     coords = strct
     |> draw_fill()
@@ -101,6 +113,9 @@ defmodule AsciiCanvas do
     Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
   end
 
+  @doc """
+  draws rectangle with outline only
+  """
   def draw(strct) when strct.fill == nil do
     coords = []
     |> draw_outline(strct, 0, strct.origin)
@@ -108,6 +123,9 @@ defmodule AsciiCanvas do
     Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
   end
 
+  @doc """
+  draws rectangle with both outline and fill
+  """
   def draw(strct) do
     coords = draw_outline_and_fill(strct)
     Repo.insert(%Drawing{coordinates: coords, canvas_id: strct.canvas_id})
