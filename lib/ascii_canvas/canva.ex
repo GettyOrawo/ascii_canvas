@@ -7,5 +7,6 @@ defmodule AsciiCanvas.Canva do
     field :width, :integer
     field :height, :integer
     field :origin, :map
+    field :drawings, {:array, :map}
   end
 end

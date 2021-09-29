@@ -6,6 +6,7 @@ defmodule AsciiCanvas.Repo.Migrations.CreateCanvas do
       add :width, :integer
       add :height, :integer
       add :origin, :map
+      add :drawings, {:array, :map}
     end
   end
 end

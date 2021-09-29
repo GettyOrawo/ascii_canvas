@@ -7,7 +7,9 @@ defmodule AsciiCanvas do
   alias AsciiCanvas.Drawing
   alias AsciiCanvas.Repo
 
-  defstruct [:origin, :width, :height, :outline, :fill, :canvas_id]
+  @derive {Jason.Encoder, only: [:drawings]}
+
+  defstruct [:origin, :width, :height, :outline, :fill, :canvas_id, :drawings]
 
   @doc """
   creates a new canvas and discards any existing ones
@@ -23,7 +25,7 @@ defmodule AsciiCanvas do
    end
 
    def launch_canvas(nil) do
-      Repo.insert(%Canva{width: 10, height: 10, origin: %{x: 0, y: 0}})
+      Repo.insert(%Canva{width: 10, height: 10, origin: %{x: 0, y: 0}, drawings: [%Drawing{coordinates:  [%{"char" => "r", "x" => 10, "y" => 10}]}]})
    end
 
   @doc """
@@ -37,7 +39,7 @@ defmodule AsciiCanvas do
 
   def new([x,y], fill) do
     canvas = Repo.one(Canva)
-    strct = %__MODULE__{ origin: {x,y}, width: (canvas.width+1)-x, height: (canvas.height+1)-y, fill: fill, canvas_id: canvas.id}
+    strct = %__MODULE__{ origin: {x,y}, width: (canvas.width+1)-x, height: (canvas.height+1)-y, fill: fill, canvas_id: "aa90d790-f06f-453b-9422-610d24534f0c"}
     draw({:flood_fill, strct})
   end
 
